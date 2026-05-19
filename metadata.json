@@ -1,0 +1,11 @@
+{
+  "name": "OneEarn",
+  "description": "Short video social platform with watch-to-earn rewards, bKash/Nagad withdrawals, and AI-powered fraud detection.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

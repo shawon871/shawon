@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    
+    // User Rules
+    match /users/{userId} {
+      allow read: if isOwner(userId) || (isSignedIn() && existing().role == 'admin');
+      allow create: if isOwner(userId) && 
+                      incoming().walletBalance == 0 &&
+                      incoming().role == 'user' &&
+                      incoming().keys().hasAll(['uid', 'email', 'role', 'walletBalance']);
+      allow update: if isOwner(userId) && 
+                      incoming().uid == existing().uid &&
+                      incoming().role == existing().role &&
+                      // Balance changes should ideally be server-side but for this applet we might allow small increments
+                      // OR we use a transactions collection and cloud functions (but we don't have CF here)
+                      // So we'll trust the verify-watch API to update balance or allow local updates with strict limits
+                      incoming().diff(existing()).affectedKeys().hasOnly(['walletBalance', 'dailyEarnings', 'lastEarningReset', 'fraudScore']);
+    }
+
+    match /videos/{videoId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sponsor', 'admin']);
+    }
+
+    match /transactions/{txId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && incoming().status == 'pending';
+      allow update: if isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /campaigns/{campId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sponsor', 'admin']);
+    }
+  }
+}

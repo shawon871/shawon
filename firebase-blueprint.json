@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and wallet data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "walletBalance": { "type": "number", "description": "Balance in coins" },
+        "referralCode": { "type": "string" },
+        "referredBy": { "type": "string" },
+        "dailyEarnings": { "type": "number" },
+        "lastEarningReset": { "type": "string", "format": "date-time" },
+        "isActive": { "type": "boolean" },
+        "isBanned": { "type": "boolean" },
+        "fraudScore": { "type": "number" },
+        "role": { "type": "string", "enum": ["user", "sponsor", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "walletBalance", "role"]
+    },
+    "Video": {
+      "title": "Video",
+      "description": "Video content for the feed",
+      "type": "object",
+      "properties": {
+        "videoId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "thumbnailUrl": { "type": "string" },
+        "sponsorId": { "type": "string" },
+        "rewardAmount": { "type": "number" },
+        "duration": { "type": "number" },
+        "views": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["videoId", "videoUrl", "sponsorId", "rewardAmount"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Wallet transaction records",
+      "type": "object",
+      "properties": {
+        "transactionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["earning", "withdrawal", "recharge", "referral"] },
+        "status": { "type": "string", "enum": ["pending", "completed", "rejected"] },
+        "method": { "type": "string", "enum": ["bKash", "Nagad", "Mobile Recharge", "System"] },
+        "accountNumber": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["transactionId", "userId", "amount", "type", "status"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Sponsor ad campaigns",
+      "type": "object",
+      "properties": {
+        "campaignId": { "type": "string" },
+        "sponsorId": { "type": "string" },
+        "title": { "type": "string" },
+        "budget": { "type": "number" },
+        "spent": { "type": "number" },
+        "videoId": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "paused", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["campaignId", "sponsorId", "budget", "videoId", "status"]
+    },
+    "AdminConfig": {
+      "title": "Admin Config",
+      "description": "Global system configuration",
+      "type": "object",
+      "properties": {
+        "coinToTakaRate": { "type": "number" },
+        "minWithdrawal": { "type": "number" },
+        "dailyLimit": { "type": "number" },
+        "referralBonus": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and wallets"
+    },
+    "/videos/{videoId}": {
+      "schema": "Video",
+      "description": "Video content library"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Financial records"
+    },
+    "/campaigns/{campaignId}": {
+      "schema": "Campaign",
+      "description": "Sponsor advertising campaigns"
+    },
+    "/system/config": {
+      "schema": "AdminConfig",
+      "description": "Global system settings"
+    }
+  }
+}
